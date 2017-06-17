@@ -1,5 +1,5 @@
 {
-    "name": "socialiteproviders/ishu",
+    "name": "zhonger/ishu",
     "description": "IShu OAuth2 Provider for Laravel Socialite",
     "license": "MIT",
     "authors": [{
