@@ -2,11 +2,10 @@
 
 namespace SocialiteProviders\IShu;
 
-use Laravel\Socialite\Two\ProviderInterface;
-use SocialiteProviders\Manager\OAuth2\AbstractProvider;
-use SocialiteProviders\Manager\OAuth2\User;
+use SocialiteProviders\Manager\OAuth1\AbstractProvider;
+use SocialiteProviders\Manager\OAuth1\User;
 
-class Provider extends AbstractProvider implements ProviderInterface
+class Provider extends AbstractProvider
 {
     /**
      * Unique Provider Identifier.
@@ -14,58 +13,22 @@ class Provider extends AbstractProvider implements ProviderInterface
     const IDENTIFIER = 'ISHU';
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    protected $scopes = ['1'];
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getAuthUrl($state)
+    public function user()
     {
-        return $this->buildAuthUrlFromBase('https://oauth.shu.edu.cn/oauth/authorize', $state);
-    }
+        if (! $this->hasNecessaryVerifier()) {
+            throw new \InvalidArgumentException("Invalid request. Missing OAuth verifier.");
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getTokenUrl()
-    {
-        return 'https://oauth.shu.edu.cn/oauth/token';
-    }
+        $user = $this->server->getUserDetails($token = $this->getToken());
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getUserByToken($token)
-    {
-        $response = $this->getHttpClient()->get('https://oauth.shu.edu.cn/rest/user/getLoggedInUser', [
-            'headers' => [
-                'Authorization' => 'Bearer '.$token,
-            ],
-        ]);
-
-        return json_decode($response->getBody(), true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function mapUserToObject(array $user)
-    {
-        return (new User())->setRaw($user)->map([
-            'id'       => $user['userid'],
-            'nickname' => $user['username']
-        ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getTokenFields($code)
-    {
-        return array_merge(parent::getTokenFields($code), [
-            'grant_type' => 'authorization_code'
-        ]);
+        return (new User())->setRaw($user->extra)->map([
+             'id'       => $user->id,
+             'nickname' => $user->nickname,
+             'name'     => $user->name,
+             'email'    => $user->email,
+             'avatar'   => $user->avatar,
+        ])->setToken($token->getIdentifier(), $token->getSecret());
     }
 }

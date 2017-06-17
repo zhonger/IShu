@@ -11,6 +11,10 @@ class IShuExtendSocialite
      */
     public function handle(SocialiteWasCalled $socialiteWasCalled)
     {
-        $socialiteWasCalled->extendSocialite('ishu', __NAMESPACE__.'\Provider');
+        $socialiteWasCalled->extendSocialite(
+            'ishu',
+            __NAMESPACE__.'\Provider',
+            __NAMESPACE__.'\Server'
+        );
     }
 }
